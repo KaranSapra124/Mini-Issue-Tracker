@@ -61,6 +61,13 @@ const Dashboard = () => {
     setEditedTicket(ticket)
   }
 
+  const handleDelete = async (id) => {
+    const res = await fetch(`http://localhost:3000/api/ticket/delete/${id}`, {
+      method: "DELETE"
+    })
+    fetchIssues()
+  }
+
   useEffect(() => {
 
     accumulateStatusCounts()
@@ -204,6 +211,9 @@ const Dashboard = () => {
                     <td className="px-6 py-4">
                       <button onClick={() => handleEdit(ticket)} className="rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-gray-800">
                         Edit
+                      </button>
+                      <button onClick={() => window.confirm("Are you sure you want to delete this ticket?") && handleDelete(ticket._id)} className="ml-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-red-700">
+                        Delete
                       </button>
                     </td>
                   </tr>
