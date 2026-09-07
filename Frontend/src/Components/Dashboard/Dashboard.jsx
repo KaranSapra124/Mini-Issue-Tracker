@@ -2,56 +2,7 @@ import React, { useEffect, useState } from 'react'
 import CreateIssueModal from '../Global/CreateIssueModal'
 
 const Dashboard = () => {
-  const [issues, setIssues] = useState([
-    {
-      title: "Fix login bug",
-      description: "Users are unable to log in with valid credentials.",
-      priority: "high",
-      status: "open"
-    },
-    {
-      title: "Add pagination",
-      description: "Implement pagination for the issues list.",
-      priority: "medium",
-      status: "in-progress"
-    },
-    {
-      title: "Update navbar",
-      description: "Improve navbar layout and mobile responsiveness.",
-      priority: "low",
-      status: "done"
-    },
-    {
-      title: "Optimize database queries",
-      description: "Reduce unnecessary MongoDB queries on the dashboard.",
-      priority: "high",
-      status: "in-progress"
-    },
-    {
-      title: "Add issue search",
-      description: "Allow users to search issues by title.",
-      priority: "medium",
-      status: "open"
-    },
-    {
-      title: "Fix responsive card layout",
-      description: "Issue cards overflow on smaller screen sizes.",
-      priority: "low",
-      status: "open"
-    },
-    {
-      title: "Add loading state",
-      description: "Display a loading indicator while fetching issues.",
-      priority: "low",
-      status: "done"
-    },
-    {
-      title: "Improve error handling",
-      description: "Show meaningful error messages when API requests fail.",
-      priority: "medium",
-      status: "done"
-    }
-  ])
+  const [issues, setIssues] = useState([])
 
   const [isModalOpen, setIsModalOpen] = useState(false)
 
@@ -59,7 +10,8 @@ const Dashboard = () => {
   const [statusCounts, setStatusCounts] = useState({
     done: 0,
     inProgress: 0,
-    open: 0
+    open: 0,
+    low: 0
   })
 
 
@@ -68,7 +20,8 @@ const Dashboard = () => {
     const counts = {
       done: 0,
       inProgress: 0,
-      open: 0
+      open: 0,
+      low: 0
     }
 
     issues?.forEach((item) => {
@@ -78,11 +31,20 @@ const Dashboard = () => {
       else if (item?.status === 'done') {
         counts.done++
       }
-      else {
+      else if (item?.status === 'open') {
         counts.open++
+      }
+      else {
+        counts.low++
       }
     })
     setStatusCounts(counts)
+  }
+
+  const fetchIssues = async () => {
+    const res = await fetch("http://localhost:3000/api/ticket/get")
+    const data = await res.json()
+    setIssues(data?.tickets)
   }
 
   const searchIssues = (e) => {
@@ -93,16 +55,25 @@ const Dashboard = () => {
     setIssues(filteredIssues)
   }
 
+  useEffect(() => {
 
+    accumulateStatusCounts()
+  }, [issues])
 
   useEffect(() => {
-    accumulateStatusCounts()
+    fetchIssues()
   }, [])
+
+  useEffect(() => {
+    if (!isModalOpen) {
+      fetchIssues()
+    }
+  }, [isModalOpen])
 
   return (
     <>
       {
-        isModalOpen && <CreateIssueModal setModal={setIsModalOpen}/>
+        isModalOpen && <CreateIssueModal setModal={setIsModalOpen} />
       }
 
       <div className="mx-auto max-w-6xl">
@@ -151,6 +122,7 @@ const Dashboard = () => {
               {statusCounts?.inProgress}
             </p>
           </div>
+
 
           <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
             <h4 className="text-sm font-medium text-gray-500">

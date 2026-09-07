@@ -16,6 +16,17 @@ const CreateIssueModal = ({ setModal }) => {
         }))
     }
 
+    const handleSubmit = async () => {
+        const res = await fetch("http://localhost:3000/api/ticket/create", {
+            method: "POST",
+            headers:{
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(issue)
+        })
+        setModal(false)
+    }
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
             <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
@@ -110,7 +121,7 @@ const CreateIssueModal = ({ setModal }) => {
                         Cancel
                     </button>
 
-                    <button className="rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-gray-800">
+                    <button onClick={handleSubmit} className="rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-gray-800">
                         Create Issue
                     </button>
                 </div>
