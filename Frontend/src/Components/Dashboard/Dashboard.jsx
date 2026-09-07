@@ -3,6 +3,7 @@ import CreateIssueModal from '../Global/CreateIssueModal'
 
 const Dashboard = () => {
   const [issues, setIssues] = useState([])
+  const [editedTicket, setEditedTicket] = useState(null)
 
   const [isModalOpen, setIsModalOpen] = useState(false)
 
@@ -55,6 +56,11 @@ const Dashboard = () => {
     setIssues(filteredIssues)
   }
 
+  const handleEdit =(ticket)=>{
+    setIsModalOpen(true)
+    setEditedTicket(ticket)
+  }
+
   useEffect(() => {
 
     accumulateStatusCounts()
@@ -73,7 +79,7 @@ const Dashboard = () => {
   return (
     <>
       {
-        isModalOpen && <CreateIssueModal setModal={setIsModalOpen} />
+        isModalOpen && <CreateIssueModal setModal={setIsModalOpen} ticket={editedTicket} />
       }
 
       <div className="mx-auto max-w-6xl">
@@ -156,6 +162,9 @@ const Dashboard = () => {
                   <th className="px-6 py-4 font-semibold">
                     Status
                   </th>
+                  <th className="px-6 py-4 font-semibold">
+                    Actions
+                  </th>
                 </tr>
               </thead>
 
@@ -191,6 +200,11 @@ const Dashboard = () => {
                       <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium capitalize text-gray-700">
                         {ticket?.status}
                       </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <button onClick={() => handleEdit(ticket)} className="rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-gray-800">
+                        Edit
+                      </button>
                     </td>
                   </tr>
                 ))}

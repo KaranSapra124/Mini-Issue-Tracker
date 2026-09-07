@@ -1,6 +1,7 @@
 import React, { useState } from "react";
+import { useEffect } from "react";
 
-const CreateIssueModal = ({ setModal }) => {
+const CreateIssueModal = ({ setModal , ticket }) => {
     const [issue, setIssue] = useState({
         title: "",
         description: "",
@@ -17,8 +18,8 @@ const CreateIssueModal = ({ setModal }) => {
     }
 
     const handleSubmit = async () => {
-        const res = await fetch("http://localhost:3000/api/ticket/create", {
-            method: "POST",
+        const res = await fetch(ticket ? `http://localhost:3000/api/ticket/edit/${ticket._id}` : "http://localhost:3000/api/ticket/create", {
+            method: ticket ? "PUT" : "POST",
             headers:{
                 "Content-Type": "application/json"
             },
@@ -26,6 +27,12 @@ const CreateIssueModal = ({ setModal }) => {
         })
         setModal(false)
     }
+
+    useEffect(()=>{
+        if(ticket){
+            setIssue(ticket)
+        }
+    },[])
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
@@ -85,7 +92,7 @@ const CreateIssueModal = ({ setModal }) => {
                                 Priority
                             </label>
 
-                            <select name="priority"
+                            <select name="priority" value={issue?.priority}
                                 onChange={handleChange}
                                 className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
                             >
@@ -102,7 +109,7 @@ const CreateIssueModal = ({ setModal }) => {
                                 Status
                             </label>
 
-                            <select name="status" onChange={handleChange}
+                            <select name="status" onChange={handleChange} value={issue?.status}
                                 className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
                             >
                                 <option value="">Select status</option>
@@ -122,7 +129,7 @@ const CreateIssueModal = ({ setModal }) => {
                     </button>
 
                     <button onClick={handleSubmit} className="rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-gray-800">
-                        Create Issue
+                       {ticket ? "Update Issue" : "Create Issue"}
                     </button>
                 </div>
 
