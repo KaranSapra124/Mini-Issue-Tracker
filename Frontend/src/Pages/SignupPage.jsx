@@ -4,7 +4,7 @@ import { signupApi } from "../utils/auth"
 
 const SignupPage = () => {
   const navigate = useNavigate()
-  const [form, setForm] = useState({ name: "", email: "", password: "", role: "Manager" })
+  const [form, setForm] = useState({ name: "", email: "", password: "" })
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [loading, setLoading] = useState(false)
@@ -69,19 +69,6 @@ const SignupPage = () => {
               placeholder="••••••••"
               className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
             />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">Role</label>
-            <select
-              name="role"
-              value={form.role}
-              onChange={handleChange}
-              className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
-            >
-              <option value="Manager">Manager</option>
-              <option value="Employee">Employee</option>
-              <option value="Admin">Admin</option>
-            </select>
           </div>
           {error && <p className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">{error}</p>}
           {success && <p className="rounded-lg bg-green-50 px-4 py-2 text-sm text-green-700">{success}</p>}

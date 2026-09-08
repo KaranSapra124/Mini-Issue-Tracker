@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { authHeader } from "../../utils/auth";
 
 const CreateIssueModal = ({ setModal , ticket }) => {
     const [issue, setIssue] = useState({
@@ -20,11 +20,18 @@ const CreateIssueModal = ({ setModal , ticket }) => {
     const handleSubmit = async () => {
         const res = await fetch(ticket ? `http://localhost:3000/api/ticket/edit/${ticket._id}` : "http://localhost:3000/api/ticket/create", {
             method: ticket ? "PUT" : "POST",
-            headers:{
-                "Content-Type": "application/json"
+            headers: {
+                "Content-Type": "application/json",
+                ...authHeader()
             },
             body: JSON.stringify(issue)
         })
+        if (res.status === 401) {
+            localStorage.removeItem("token")
+            localStorage.removeItem("role")
+            window.location.href = "/login"
+            return
+        }
         setModal(false)
     }
 

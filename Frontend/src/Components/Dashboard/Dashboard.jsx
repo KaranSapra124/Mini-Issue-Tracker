@@ -1,12 +1,16 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import CreateIssueModal from '../Global/CreateIssueModal'
+import CreateEmployeeModal from '../Global/CreateEmployeeModal'
+import AssignTicketModal from './AssignTicketModal'
+import { authHeader } from '../../utils/auth'
 
 const Dashboard = () => {
   const [issues, setIssues] = useState([])
+  const [allIssues, setAllIssues] = useState([])
   const [editedTicket, setEditedTicket] = useState(null)
-
   const [isModalOpen, setIsModalOpen] = useState(false)
-
+  const [isEmployeeOpen, setIsEmployeeOpen] = useState(false)
+  const [assigningTicket, setAssigningTicket] = useState(null)
 
   const [statusCounts, setStatusCounts] = useState({
     done: 0,
@@ -15,9 +19,7 @@ const Dashboard = () => {
     low: 0
   })
 
-
-
-  const accumulateStatusCounts = () => {
+  const accumulateStatusCounts = (list) => {
     const counts = {
       done: 0,
       inProgress: 0,
@@ -25,7 +27,7 @@ const Dashboard = () => {
       low: 0
     }
 
-    issues?.forEach((item) => {
+    list?.forEach((item) => {
       if (item?.status === 'in-progress') {
         counts.inProgress++
       }
@@ -43,34 +45,53 @@ const Dashboard = () => {
   }
 
   const fetchIssues = async () => {
-    const res = await fetch("http://localhost:3000/api/ticket/get")
+    const res = await fetch("http://localhost:3000/api/ticket/get", {
+      headers: { ...authHeader() }
+    })
+    if (res.status === 401) {
+      localStorage.removeItem("token")
+      localStorage.removeItem("role")
+      window.location.href = "/login"
+      return
+    }
     const data = await res.json()
-    setIssues(data?.tickets)
+    const list = data?.tickets || []
+    setIssues(list)
+    setAllIssues(list)
   }
 
   const searchIssues = (e) => {
     const searchQuery = e.target.value
-    const filteredIssues = issues?.filter((item) => {
+    if (!searchQuery) {
+      setIssues(allIssues)
+      return
+    }
+    const filteredIssues = allIssues?.filter((item) => {
       return item?.title?.toLowerCase().includes(searchQuery.toLowerCase())
     })
     setIssues(filteredIssues)
   }
 
   const handleEdit = (ticket) => {
-    setIsModalOpen(true)
     setEditedTicket(ticket)
+    setIsModalOpen(true)
+  }
+
+  const handleCreate = () => {
+    setEditedTicket(null)
+    setIsModalOpen(true)
   }
 
   const handleDelete = async (id) => {
-    const res = await fetch(`http://localhost:3000/api/ticket/delete/${id}`, {
-      method: "DELETE"
+    await fetch(`http://localhost:3000/api/ticket/delete/${id}`, {
+      method: "DELETE",
+      headers: { ...authHeader() }
     })
     fetchIssues()
   }
 
   useEffect(() => {
-
-    accumulateStatusCounts()
+    accumulateStatusCounts(issues)
   }, [issues])
 
   useEffect(() => {
@@ -85,9 +106,11 @@ const Dashboard = () => {
 
   return (
     <>
-      {
-        isModalOpen && <CreateIssueModal setModal={setIsModalOpen} ticket={editedTicket} />
-      }
+      {isModalOpen && <CreateIssueModal setModal={setIsModalOpen} ticket={editedTicket} />}
+      {isEmployeeOpen && <CreateEmployeeModal setModal={setIsEmployeeOpen} />}
+      {assigningTicket && (
+        <AssignTicketModal ticket={assigningTicket} setModal={() => setAssigningTicket(null)} onAssigned={fetchIssues} />
+      )}
 
       <div className="mx-auto max-w-6xl">
 
@@ -102,14 +125,18 @@ const Dashboard = () => {
             </p>
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <input onChange={searchIssues}
               placeholder="Search issues..."
               type="search"
               className="w-64 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm outline-none transition focus:border-gray-500 focus:ring-2 focus:ring-gray-200"
             />
 
-            <button onClick={() => setIsModalOpen(true)} className="rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-gray-800">
+            <button onClick={() => setIsEmployeeOpen(true)} className="rounded-lg border border-gray-900 bg-white px-4 py-2.5 text-sm font-medium text-gray-900 transition hover:bg-gray-100">
+              + Create Employee
+            </button>
+
+            <button onClick={handleCreate} className="rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-gray-800">
               + Create Issue
             </button>
           </div>
@@ -209,12 +236,17 @@ const Dashboard = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <button onClick={() => handleEdit(ticket)} className="rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-gray-800">
-                        Edit
-                      </button>
-                      <button onClick={() => window.confirm("Are you sure you want to delete this ticket?") && handleDelete(ticket._id)} className="ml-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-red-700">
-                        Delete
-                      </button>
+                      <div className="flex flex-wrap gap-2">
+                        <button onClick={() => handleEdit(ticket)} className="rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-gray-800">
+                          Edit
+                        </button>
+                        <button onClick={() => setAssigningTicket(ticket)} className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-blue-700">
+                          Assign to
+                        </button>
+                        <button onClick={() => window.confirm("Are you sure you want to delete this ticket?") && handleDelete(ticket._id)} className="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-red-700">
+                          Delete
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 )) : <tr className="text-center text-lg h-12 font-bold text-gray-700"><td colSpan="4">Tickets Not Found!</td></tr>}

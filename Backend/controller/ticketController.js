@@ -3,7 +3,7 @@ import Ticket from "../models/Ticket.js"
 // import Ticket from "../models/Ticket"
 export const createTicket = async (req, res) => {
     try {
-        const newTicker = await Ticket.create(req.body)
+        const newTicker = await Ticket.create({ ...req.body, createdBy: req.user.id, createdAt: new Date() })
         return res.status(200).json({ message: "Ticket created successfully", ticket: newTicker })
     } catch (err) {
         return res.status(500).json({ message: "Internal server error", error: err.message })
@@ -12,7 +12,7 @@ export const createTicket = async (req, res) => {
 
 export const getTickets = async (req, res) => {
     try {
-        const tickets = await Ticket.find()
+        const tickets = await Ticket.find({ createdBy: req.user.id })
         return res.status(200).json({ message: "Tickets fetched successfully", tickets })
     } catch (err) {
         return res.status(500).json({ message: "Internal server error", error: err.message })
@@ -22,7 +22,7 @@ export const getTickets = async (req, res) => {
 export const updateTicket = async (req, res) => {
     try {
         const { id } = req.params
-        const updatedTicket = await Ticket.findByIdAndUpdate(id, req.body, { new: true })
+        const updatedTicket = await Ticket.findOneAndUpdate({ _id: id, createdBy: req.user.id }, req.body, { new: true })
         if (!updatedTicket) {
             return res.status(404).json({ message: "Ticket not found" })
         }
@@ -35,7 +35,7 @@ export const updateTicket = async (req, res) => {
 export const deleteTicket = async (req, res) => {
     try {
         const { id } = req.params
-        const deletedTicket = await Ticket.findByIdAndDelete(id)
+        const deletedTicket = await Ticket.findOneAndDelete({ _id: id, createdBy: req.user.id })
         if (!deletedTicket) {
             return res.status(404).json({ message: "Ticket not found" })
         }

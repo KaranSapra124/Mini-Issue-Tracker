@@ -11,6 +11,10 @@ const ticketSchema = new Schema({
         type:String,
         enum: ["open", "in progress", "closed"]
     },
+    createdBy:{
+        type: Schema.Types.ObjectId,
+        ref: "User"
+    },
     createdAt: Date
 })
 

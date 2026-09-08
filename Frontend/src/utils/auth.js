@@ -11,15 +11,20 @@ export const loginApi = async ({ email, password }) => {
   return data
 }
 
-export const signupApi = async ({ name, email, password, role }) => {
+export const signupApi = async ({ name, email, password }) => {
   const res = await fetch(`${API_BASE}/signin`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, email, password, role }),
+    body: JSON.stringify({ name, email, password, role: "Manager" }),
   })
   const data = await res.json()
   if (!res.ok) throw new Error(data?.message || "Signup failed")
   return data
+}
+
+export const authHeader = () => {
+  const token = getToken()
+  return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
 export const setAuth = ({ token, role }) => {
