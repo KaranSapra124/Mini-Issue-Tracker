@@ -56,7 +56,7 @@ const Dashboard = () => {
     setIssues(filteredIssues)
   }
 
-  const handleEdit =(ticket)=>{
+  const handleEdit = (ticket) => {
     setIsModalOpen(true)
     setEditedTicket(ticket)
   }
@@ -176,7 +176,7 @@ const Dashboard = () => {
               </thead>
 
               <tbody className="divide-y divide-gray-100">
-                {issues?.map((ticket) => (
+                {issues?.length > 0 ? issues?.map((ticket) => (
                   <tr
                     key={ticket._id || ticket.title}
                     className="transition hover:bg-gray-50"
@@ -217,7 +217,7 @@ const Dashboard = () => {
                       </button>
                     </td>
                   </tr>
-                ))}
+                )) : <tr className="text-center text-lg h-12 font-bold text-gray-700"><td colSpan="4">Tickets Not Found!</td></tr>}
               </tbody>
             </table>
           </div>
